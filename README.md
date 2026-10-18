@@ -5,9 +5,6 @@ Open-source, real-time transaction fraud detection built on **Spring Boot**, **K
 Transactions arrive on a Kafka topic, are scored by stateful rules (and optionally an ML model),
 and are routed to `scored` and `flagged` topics. Results are persisted to PostgreSQL.
 
-> **Status: early development.** This is a ground-up rebuild of an earlier prototype. Rule state moves
-> from Redis into Kafka Streams state stores with exactly-once processing, and persistence moves from
-> JPA to jOOQ. Sections marked *(planned)* are not implemented yet.
 
 ## Features
 
@@ -17,7 +14,7 @@ and are routed to `scored` and `flagged` topics. Results are persisted to Postgr
   so a retry never double-counts a transaction. *(planned: verified by tests)*
 - **Idempotent persistence:** `INSERT ... ON CONFLICT DO NOTHING` on `transaction_id`, so redelivered
   messages cannot create duplicate rows.
-- **Type-safe SQL** with jOOQ, generated from the Flyway migrations at build time (no JPA).
+- **Type-safe SQL** with jOOQ, generated from the Flyway migrations at build time. No ORM.
 - **Pure, testable rules:** scoring logic is plain Java with no Spring or Kafka imports. *(planned)*
 - **Optional ML scoring** via a Python sidecar (FastAPI, scikit-learn, LightGBM). *(planned)*
 
@@ -96,8 +93,9 @@ package, so they can move to another engine without being rewritten.
 
 ### Why no Redis?
 
-The original prototype kept rule state (velocity counters, last-seen location, known devices) in Redis.
-That worked, but it had real problems, so state now lives in Kafka Streams state stores:
+Fraud rules need memory: velocity counters, the last-seen location and the set of known devices per customer.
+A common approach is to keep that state in an external store such as Redis. We keep it in Kafka Streams state
+stores instead, for these reasons:
 
 - **Exactly-once.** A Redis write inside a rule is not part of the Kafka transaction. If a record is
   retried, the write happens twice: the velocity count goes up again and a device is marked "seen" before the
