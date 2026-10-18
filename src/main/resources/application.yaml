@@ -15,6 +15,20 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+      properties:
+        # Send plain JSON, without Java type headers.
+        spring.json.add.type.headers: false
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+      properties:
+        spring.json.value.default.type: io.github.kweheliye.frauddetection.domain.ScoredTransaction
+        spring.json.use.type.headers: false
+        spring.json.trusted.packages: io.github.kweheliye.frauddetection.domain
     streams:
       application-id: fraud-detection-engine
       properties:
@@ -27,3 +41,42 @@ management:
     web:
       exposure:
         include: health,info,metrics
+
+
+
+fraud:
+  topics:
+    raw: transactions.raw
+    scored: transactions.scored
+    flagged: transactions.flagged
+  medium-from: 30
+  high-from: 70
+  profile-retention: 1h
+  rules:
+    amount:
+      name: AMOUNT_THRESHOLD
+      enabled: true
+      weight: 40
+      threshold: 10000
+    geo:
+      name: GEO_MISMATCH
+      enabled: true
+      weight: 25
+      window: 1h
+    velocity:
+      name: VELOCITY
+      enabled: true
+      weight: 25
+      max-transactions: 5
+      window: 60s
+    new-device:
+      name: NEW_DEVICE
+      enabled: true
+      weight: 10
+    ml:
+      name: ML_SCORING
+      enabled: false        # set to true after `make ml` has started the sidecar
+      weight: 35
+      threshold: 0.5        # a sidecar score at or above this fires the rule
+      url: http://localhost:8000
+      timeout: 500ms

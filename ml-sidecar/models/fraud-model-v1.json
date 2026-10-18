@@ -1,0 +1,31 @@
+{
+  "version": "v1",
+  "trained_at": "2026-10-18T10:00:02+00:00",
+  "data": "synthetic (training/data.py)",
+  "features": [
+    "amount",
+    "amount_vs_avg",
+    "seconds_since_last",
+    "distance_from_last_km",
+    "txns_last_hour",
+    "is_new_device",
+    "hour_sin",
+    "hour_cos",
+    "is_weekend"
+  ],
+  "rows": {
+    "train": 93352,
+    "validation": 37337,
+    "test": 56133
+  },
+  "fraud_rate_test": 0.0161,
+  "metrics_on_test": {
+    "pr_auc": 0.9211,
+    "pr_auc_random_baseline": 0.0161,
+    "roc_auc": 0.988,
+    "threshold": 0.458,
+    "precision_at_threshold": 0.8906,
+    "recall_at_threshold": 0.8313
+  },
+  "lightgbm_version": "4.7.0"
+}
