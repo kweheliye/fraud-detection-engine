@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: fraud-detection-engine
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fraud
+    username: fraud
+    password: fraud
+
+  flyway:
+    enabled: true
+
+  jooq:
+    sql-dialect: postgres
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    streams:
+      application-id: fraud-detection-engine
+      properties:
+        # Exactly-once: state-store updates, output records and offsets commit atomically.
+        processing.guarantee: exactly_once_v2
+        commit.interval.ms: 100
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
